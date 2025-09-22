@@ -1,0 +1,5 @@
+python-on-whales
+datasets # HuggingFace
+psycopg2
+numpy
+pandas
