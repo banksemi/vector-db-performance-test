@@ -3,6 +3,7 @@ from numpy.typing import NDArray
 import numpy as np
 
 from src.databases.indexes.interface import Index
+from src.datasets.dto.answer_document import AnswerDocument
 from src.datasets.dto.document import Document
 
 
