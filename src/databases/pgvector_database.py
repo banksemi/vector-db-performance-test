@@ -7,6 +7,9 @@ from numpy.typing import NDArray
 from src.databases.indexes.distance import Distance
 from src.databases.indexes.hnsw_index import HNSWIndex
 from src.databases.indexes.interface import Index
+from src.datasets.dto.answer_document import AnswerDocument
+from src.datasets.dto.document import Document
+
 
 def adapt_numpy_array(arr):
     return psycopg2.extensions.adapt(arr.tolist())
@@ -35,9 +38,9 @@ class PgVectorDatabase(DockerBasedDatabase):
                  );
             """)
 
-    def insert_batch(self, idx: list[int], embedding: list[NDArray[np.float64]]):
+    def insert_batch(self, documents: list[Document]):
         with self._conn.cursor() as cur:
-            rows = list(zip(idx, embedding))
+            rows = [(i.id, i.embedding) for i in documents]
             execute_values(
                 cur,
                 "INSERT INTO items (idx, emb) VALUES %s",
@@ -51,9 +54,9 @@ class PgVectorDatabase(DockerBasedDatabase):
             cur.execute(f"SET hnsw.ef_search = {ef_search}")
             self._conn.commit()
 
-    def get_neighbors(self, embedding: NDArray[np.float64], limit: int, **kwargs) -> list[int]:
+    def get_neighbors(self, document: AnswerDocument, limit: int) -> list[int]:
         with self._conn.cursor() as cur:
-            vector_str = '[' +  ','.join(map(str, embedding)) + ']'
+            vector_str = '[' +  ','.join(map(str, document.embedding)) + ']'
 
             cur.execute(f"""
                         SELECT idx

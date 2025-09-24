@@ -3,6 +3,7 @@ from numpy.typing import NDArray
 import numpy as np
 
 from src.databases.indexes.interface import Index
+from src.datasets.dto.document import Document
 
 
 class Database(ABC):
@@ -23,11 +24,11 @@ class Database(ABC):
         ...
 
     @abstractmethod
-    def insert_batch(self, idx: list[int], embedding: list[NDArray[np.float64]]):
+    def insert_batch(self, documents: list[Document]):
         ...
 
     @abstractmethod
-    def get_neighbors(self, embedding: NDArray[np.float64], limit: int, **kwargs) -> list[int]:
+    def get_neighbors(self, document: AnswerDocument, limit: int) -> list[int]:
         ...
 
     @abstractmethod

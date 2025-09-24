@@ -3,3 +3,4 @@ datasets # HuggingFace
 psycopg2
 numpy
 pandas
+matplotlib
