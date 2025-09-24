@@ -78,10 +78,17 @@ class PgVectorDatabase(DockerBasedDatabase):
                     distance_metric = "vector_cosine_ops"
                 else:
                     raise Exception("Not supported distance metric")
-                cur.execute(f"""
-                    CREATE INDEX index1
-                    ON items USING hnsw (emb {distance_metric})
-                """)
+                options = {}
+                if index.ef_construction is not None:
+                    options['ef_construction'] = index.ef_construction
+
+                query = f"CREATE INDEX index1 ON items USING hnsw (emb {distance_metric})"
+                if len(options) > 0:
+                    query_strs = []
+                    for key, value in options.items():
+                        query_strs.append(f"{key}={value}")
+                    query += f" WITH ({', '.join(query_strs)})"
+                cur.execute(query)
                 self._conn.commit()
 
         else:
