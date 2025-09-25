@@ -82,6 +82,9 @@ class PgVectorDatabase(DockerBasedDatabase):
                 if index.ef_construction is not None:
                     options['ef_construction'] = index.ef_construction
 
+                if index.m is not None:
+                    options['m'] = index.m
+
                 query = f"CREATE INDEX index1 ON items USING hnsw (emb {distance_metric})"
                 if len(options) > 0:
                     query_strs = []
