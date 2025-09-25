@@ -16,16 +16,16 @@ def adapt_numpy_array(arr):
 psycopg2.extensions.register_adapter(np.ndarray, adapt_numpy_array)
 
 class PgVectorDatabase(DockerBasedDatabase):
-    COMPOSE_FILE = "docker/pgvector.yaml"
+    DOCKER_FOLDER = "docker/pgvector"
 
     def start(self, reset=True):
         super().start(reset=reset)
         self._conn = psycopg2.connect(
             host="localhost",
             port="5432",
-            dbname="vectordb",
-            user="postgres",
-            password="postgres"
+            dbname=self.get_env_value("POSTGRES_DB"),
+            user=self.get_env_value("POSTGRES_USER"),
+            password=self.get_env_value("POSTGRES_PASSWORD")
         )
 
     def create_table(self, dim: int):
