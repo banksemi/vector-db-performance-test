@@ -5,6 +5,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from src.databases.indexes.distance import Distance
+from src.databases.indexes.no_index import NoIndex
 from src.databases.indexes.hnsw_index import HNSWIndex
 from src.databases.indexes.interface import Index
 from src.datasets.dto.answer_document import AnswerDocument
@@ -70,7 +71,11 @@ class PgVectorDatabase(DockerBasedDatabase):
         self._conn.close()
         super().close()
 
-    def create_index(self, index: Index):
+    def _create_index(self, index: Index):
+        if isinstance(index, NoIndex):
+            self.drop_index()
+            return
+
         if isinstance(index, HNSWIndex):
             with self._conn.cursor() as cur:
                 distance_metric = None
