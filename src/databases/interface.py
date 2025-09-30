@@ -13,15 +13,7 @@ class Database(ABC):
         ...
 
     @abstractmethod
-    def create_table(self, dim: int):
-        ...
-
-    @abstractmethod
-    def create_index(self, index: Index):
-        ...
-
-    @abstractmethod
-    def drop_index(self):
+    def setup(self, dim: int, index: Index, reset_data=False):
         ...
 
     @abstractmethod

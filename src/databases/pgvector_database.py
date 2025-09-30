@@ -28,16 +28,22 @@ class PgVectorDatabase(DockerBasedDatabase):
             user=self.get_env_value("POSTGRES_USER"),
             password=self.get_env_value("POSTGRES_PASSWORD")
         )
-
-    def create_table(self, dim: int):
         with self._conn.cursor() as cur:
+            cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
+
+    def setup(self, dim: int, index: Index, reset_data=False):
+        with self._conn.cursor() as cur:
+            if reset_data:
+                cur.execute("DROP TABLE IF EXISTS items")
+
             cur.execute(f"""
-                   CREATE EXTENSION IF NOT EXISTS vector;
-                   CREATE TABLE items (
+                   CREATE TABLE IF NOT EXISTS items (
                         idx INTEGER PRIMARY KEY,
-                     emb VECTOR({dim})
+                        emb VECTOR({dim})
                  );
             """)
+
+            self._create_index(index)
 
     def insert_batch(self, documents: list[Document]):
         with self._conn.cursor() as cur:
@@ -72,12 +78,12 @@ class PgVectorDatabase(DockerBasedDatabase):
         super().close()
 
     def _create_index(self, index: Index):
-        if isinstance(index, NoIndex):
-            self.drop_index()
-            return
+        with self._conn.cursor() as cur:
+            cur.execute("DROP INDEX IF EXISTS index1")
+            if isinstance(index, NoIndex):
+                return
 
-        if isinstance(index, HNSWIndex):
-            with self._conn.cursor() as cur:
+            if isinstance(index, HNSWIndex):
                 distance_metric = None
                 if index.distance_metric == Distance.COSINE:
                     distance_metric = "vector_cosine_ops"
@@ -98,11 +104,5 @@ class PgVectorDatabase(DockerBasedDatabase):
                     query += f" WITH ({', '.join(query_strs)})"
                 cur.execute(query)
                 self._conn.commit()
-
-        else:
-            raise Exception("Not supported index")
-
-    def drop_index(self):
-        with self._conn.cursor() as cur:
-            cur.execute("DROP INDEX IF EXISTS index1")
-            self._conn.commit()
+            else:
+                raise Exception("Not supported index")
