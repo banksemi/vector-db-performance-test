@@ -1,3 +1,5 @@
+from typing import Optional
+
 from src.databases.docker_based_database import DockerBasedDatabase
 import psycopg2
 from psycopg2.extras import execute_values
@@ -8,6 +10,7 @@ from src.databases.indexes.distance import Distance
 from src.databases.indexes.no_index import NoIndex
 from src.databases.indexes.hnsw_index import HNSWIndex
 from src.databases.indexes.interface import Index
+from src.databases.pgvector.index_mapper.interface import PGVectorIndexMapper
 from src.datasets.dto.answer_document import AnswerDocument
 from src.datasets.dto.document import Document
 
@@ -18,6 +21,17 @@ psycopg2.extensions.register_adapter(np.ndarray, adapt_numpy_array)
 
 class PgVectorDatabase(DockerBasedDatabase):
     DOCKER_FOLDER = "docker/pgvector"
+
+    def __init__(self, index_mappers: Optional[list[PGVectorIndexMapper]] = None):
+        # 주의: index_mappers의 기본 값으로 [] 을 사용하면 의도치 않게 기본 값을 수정할 수 있어 사이드 이펙트 발생 가능
+
+        super().__init__()
+
+        self._index_mappers: dict[type[Index], PGVectorIndexMapper] = {}
+        if index_mappers is not None:
+            self._index_mappers = {
+                mapper.get_input_class(): mapper for mapper in index_mappers
+            }
 
     def start(self, reset=True):
         super().start(reset=reset)
@@ -80,29 +94,12 @@ class PgVectorDatabase(DockerBasedDatabase):
     def _create_index(self, index: Index):
         with self._conn.cursor() as cur:
             cur.execute("DROP INDEX IF EXISTS index1")
-            if isinstance(index, NoIndex):
-                return
 
-            if isinstance(index, HNSWIndex):
-                distance_metric = None
-                if index.distance_metric == Distance.COSINE:
-                    distance_metric = "vector_cosine_ops"
-                else:
-                    raise Exception("Not supported distance metric")
-                options = {}
-                if index.ef_construction is not None:
-                    options['ef_construction'] = index.ef_construction
+            index_class = type(index)
+            if index_class not in self._index_mappers:
+                raise Exception("Not supported index")
 
-                if index.m is not None:
-                    options['m'] = index.m
-
-                query = f"CREATE INDEX index1 ON items USING hnsw (emb {distance_metric})"
-                if len(options) > 0:
-                    query_strs = []
-                    for key, value in options.items():
-                        query_strs.append(f"{key}={value}")
-                    query += f" WITH ({', '.join(query_strs)})"
+            query: str = self._index_mappers[index_class].convert_query(index)
+            if query:
                 cur.execute(query)
                 self._conn.commit()
-            else:
-                raise Exception("Not supported index")
