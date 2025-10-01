@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
-from numpy.typing import NDArray
-import numpy as np
 
-from src.databases.indexes.interface import Index
+from src.databases.dto.database_schema_config import DatabaseSchemaConfig
+from src.databases.dto.indexes.interface import Index
 from src.datasets.dto.answer_document import AnswerDocument
 from src.datasets.dto.document import Document
 
@@ -13,7 +12,7 @@ class Database(ABC):
         ...
 
     @abstractmethod
-    def setup(self, dim: int, index: Index, reset_data=False):
+    def setup(self, config: DatabaseSchemaConfig):
         ...
 
     @abstractmethod

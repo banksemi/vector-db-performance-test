@@ -1,8 +1,8 @@
 from typing import Type
 
-from src.databases.indexes.distance import Distance
-from src.databases.indexes.hnsw_index import HNSWIndex
-from src.databases.indexes.interface import Index
+from src.databases.dto.distance import Distance
+from src.databases.dto.indexes.hnsw_index import HNSWIndex
+from src.databases.dto.indexes.interface import Index
 from src.databases.pgvector.index_mapper.interface import PGVectorIndexMapper
 
 

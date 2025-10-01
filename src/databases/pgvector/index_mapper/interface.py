@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Type
 
-from src.databases.indexes.interface import Index
+from src.databases.dto.indexes.interface import Index
 
 
 class PGVectorIndexMapper(ABC):

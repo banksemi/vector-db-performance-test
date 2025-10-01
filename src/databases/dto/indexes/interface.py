@@ -1,8 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 from pydantic import BaseModel
 
-from src.databases.indexes.distance import Distance
+from src.databases.dto.distance import Distance
 
 
 class Index(ABC, BaseModel):

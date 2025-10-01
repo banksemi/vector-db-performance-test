@@ -2,7 +2,8 @@ import psycopg2
 from psycopg2.extras import execute_values
 import numpy as np
 
-from src.databases.indexes.interface import Index
+from src.databases.dto.database_schema_config import DatabaseSchemaConfig
+from src.databases.dto.indexes.interface import Index
 from src.databases.docker_based_database import DockerBasedDatabase
 from src.databases.pgvector.index_mapper.interface import PGVectorIndexMapper
 from src.datasets.dto.answer_document import AnswerDocument
@@ -35,19 +36,19 @@ class PgVectorDatabase(DockerBasedDatabase):
         with self._conn.cursor() as cur:
             cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
 
-    def setup(self, dim: int, index: Index, reset_data=False):
+    def setup(self, config: DatabaseSchemaConfig):
         with self._conn.cursor() as cur:
-            if reset_data:
+            if config.reset_data:
                 cur.execute("DROP TABLE IF EXISTS items")
 
             cur.execute(f"""
                    CREATE TABLE IF NOT EXISTS items (
                         idx INTEGER PRIMARY KEY,
-                        emb VECTOR({dim})
+                        emb VECTOR({config.dim})
                  );
             """)
 
-            self._create_index(index)
+            self._create_index(config.index)
 
     def insert_batch(self, documents: list[Document]):
         with self._conn.cursor() as cur:

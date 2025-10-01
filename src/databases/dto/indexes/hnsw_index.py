@@ -1,5 +1,5 @@
 from typing import Optional
-from src.databases.indexes.interface import Index
+from src.databases.dto.indexes.interface import Index
 
 
 class HNSWIndex(Index):
