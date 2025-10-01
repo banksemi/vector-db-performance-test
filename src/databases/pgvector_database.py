@@ -5,6 +5,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from src.databases.indexes.distance import Distance
+from src.databases.indexes.empty_index import EmptyIndex
 from src.databases.indexes.hnsw_index import HNSWIndex
 from src.databases.indexes.interface import Index
 from src.datasets.dto.answer_document import AnswerDocument
@@ -28,15 +29,21 @@ class PgVectorDatabase(DockerBasedDatabase):
             password=self.get_env_value("POSTGRES_PASSWORD")
         )
 
-    def create_table(self, dim: int):
+    def setup(self, dim: int, index: Index, reset_data=False):
         with self._conn.cursor() as cur:
+            cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
+            cur.execute("DROP INDEX IF EXISTS index1")
+            if reset_data:
+                cur.execute("DROP TABLE IF EXISTS items")
+
             cur.execute(f"""
-                   CREATE EXTENSION IF NOT EXISTS vector;
-                   CREATE TABLE items (
+                   CREATE TABLE IF NOT EXISTS items (
                         idx INTEGER PRIMARY KEY,
-                     emb VECTOR({dim})
+                        emb VECTOR({dim})
                  );
             """)
+
+            self._create_index(index)
 
     def insert_batch(self, documents: list[Document]):
         with self._conn.cursor() as cur:
@@ -70,7 +77,10 @@ class PgVectorDatabase(DockerBasedDatabase):
         self._conn.close()
         super().close()
 
-    def create_index(self, index: Index):
+    def _create_index(self, index: Index):
+        if isinstance(index, EmptyIndex):
+            return
+
         if isinstance(index, HNSWIndex):
             with self._conn.cursor() as cur:
                 distance_metric = None
@@ -96,8 +106,3 @@ class PgVectorDatabase(DockerBasedDatabase):
 
         else:
             raise Exception("Not supported index")
-
-    def drop_index(self):
-        with self._conn.cursor() as cur:
-            cur.execute("DROP INDEX IF EXISTS index1")
-            self._conn.commit()
