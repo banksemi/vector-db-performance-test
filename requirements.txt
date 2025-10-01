@@ -1,6 +1,9 @@
 python-on-whales
 datasets # HuggingFace
+
 psycopg2
+opensearch-py
+
 numpy
 pandas
 matplotlib
