@@ -5,7 +5,7 @@ from src.databases.indexes.no_index import NoIndex
 from src.databases.pgvector.index_mapper.interface import PGVectorIndexMapper
 
 
-class PgVectorNoIndexMapper(PGVectorIndexMapper):
+class PGVectorNoIndexMapper(PGVectorIndexMapper):
     def get_input_class(self) -> Type[Index]:
         return NoIndex
 

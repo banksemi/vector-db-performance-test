@@ -1,30 +1,18 @@
-from typing import Optional
-
-from src.databases.docker_based_database import DockerBasedDatabase
 import psycopg2
 from psycopg2.extras import execute_values
 import numpy as np
-from numpy.typing import NDArray
 
-from src.databases.indexes.distance import Distance
-from src.databases.indexes.no_index import NoIndex
-from src.databases.indexes.hnsw_index import HNSWIndex
 from src.databases.indexes.interface import Index
+from src.databases.docker_based_database import DockerBasedDatabase
 from src.databases.pgvector.index_mapper.interface import PGVectorIndexMapper
 from src.datasets.dto.answer_document import AnswerDocument
 from src.datasets.dto.document import Document
 
 
-def adapt_numpy_array(arr):
-    return psycopg2.extensions.adapt(arr.tolist())
-psycopg2.extensions.register_adapter(np.ndarray, adapt_numpy_array)
-
 class PgVectorDatabase(DockerBasedDatabase):
     DOCKER_FOLDER = "docker/pgvector"
 
-    def __init__(self, index_mappers: Optional[list[PGVectorIndexMapper]] = None):
-        # 주의: index_mappers의 기본 값으로 [] 을 사용하면 의도치 않게 기본 값을 수정할 수 있어 사이드 이펙트 발생 가능
-
+    def __init__(self, index_mappers: list[PGVectorIndexMapper]):
         super().__init__()
 
         self._index_mappers: dict[type[Index], PGVectorIndexMapper] = {}
@@ -32,6 +20,8 @@ class PgVectorDatabase(DockerBasedDatabase):
             self._index_mappers = {
                 mapper.get_input_class(): mapper for mapper in index_mappers
             }
+
+        psycopg2.extensions.register_adapter(np.ndarray, lambda arr: psycopg2.extensions.adapt(arr.tolist()))
 
     def start(self, reset=True):
         super().start(reset=reset)
