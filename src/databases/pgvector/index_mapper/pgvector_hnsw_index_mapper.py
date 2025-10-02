@@ -6,11 +6,8 @@ from src.databases.dto.indexes.interface import Index
 from src.databases.pgvector.index_mapper.interface import PGVectorIndexMapper
 
 
-class PGVectorHNSWIndexMapper(PGVectorIndexMapper):
-    def get_input_class(self) -> Type[Index]:
-        return HNSWIndex
-
-    def convert_query(self, index: Index) -> str:
+class PGVectorHNSWIndexMapper(PGVectorIndexMapper[HNSWIndex]):
+    def convert_query(self, index: HNSWIndex) -> str:
         distance_metric = None
 
         if index.distance_metric == Distance.COSINE:
