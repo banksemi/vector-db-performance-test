@@ -8,12 +8,10 @@ from src.datasets.dto.answer_document import AnswerDocument
 from src.datasets.dto.document import Document
 
 class OpenSearchDatabase(DockerBasedDatabase):
-
-
     DOCKER_FOLDER = "docker/opensearch"
     def __init__(self, index_mappers: list[OpenSearchIndexMapper]):
         super().__init__()
-        self.dim = None
+        self.dim: int | None = None
         self._index_name = 'index1'
         self._index_mappers = {
             mapper.get_input_class(): mapper for mapper in index_mappers

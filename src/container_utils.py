@@ -53,10 +53,11 @@ def get_list_provider(*providers: Provider) -> Provider:
             continue
 
         list_provider.provide_all(*classes)
-        list_provider.provide(lambda: [], provides=list[interface])
+        provided_type = list[interface]  # type: ignore
+        list_provider.provide(lambda: [], provides=provided_type)
         for cls in implementations:
             @list_provider.decorate
-            def aggregate_classes(many: list[interface], one: cls) -> list[interface]:
+            def aggregate_classes(many: provided_type, one: cls) -> provided_type:  # type: ignore
                 return many + [one]
 
     return list_provider

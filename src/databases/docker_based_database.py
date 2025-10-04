@@ -7,7 +7,7 @@ from src.databases.interface import Database
 
 
 class DockerBasedDatabase(Database, ABC):
-    DOCKER_FOLDER = None
+    DOCKER_FOLDER: str | None = None
 
     def __init__(self):
         super().__init__()

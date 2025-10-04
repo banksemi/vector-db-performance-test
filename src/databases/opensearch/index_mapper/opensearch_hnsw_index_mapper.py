@@ -13,6 +13,6 @@ class OpenSearchHNSWIndexMapper(OpenSearchIndexMapper):
     def convert_query(self, index: Index) -> dict:
         return {
             "name": "hnsw",
-            "space_type": get_space_type(index.distance),
+            "space_type": get_space_type(index.distance_metric),
             "engine": "lucene"
         }

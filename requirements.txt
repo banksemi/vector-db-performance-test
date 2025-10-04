@@ -10,3 +10,9 @@ matplotlib
 python-dotenv
 
 dishka
+
+mypy
+types-requests
+types-psycopg2
+types-tqdm
+

@@ -14,19 +14,3 @@ def make_dataframe_batch(df: pd.DataFrame, batch_size: int) -> Iterator[pd.DataF
         end = min(start + batch_size, total)
         datas = df.iloc[start:end]
         yield datas
-
-
-def tqdm_with_dataset(dataset: Dataset, mode='train', batch_size=100) -> Iterator[list[Union[Document, AnswerDocument]]]:
-    if mode == 'train':
-        pbar = tqdm(total=dataset.get_length_of_train())
-        iter = dataset.get_train_datas(batch_size)
-    elif mode == 'test':
-        pbar = tqdm(total=dataset.get_length_of_test())
-        iter = dataset.get_test_datas(batch_size)
-    else:
-        raise ValueError(f'Invalid mode: {mode}')
-
-    for i in iter:
-        pbar.update(len(i))
-        yield i
-
